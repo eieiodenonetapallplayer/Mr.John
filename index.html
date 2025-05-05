@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AquaMind - ร่วมอนุรักษ์น้ำด้วยความสร้างสรรค์และแรงบันดาลใจ">
+    <title>AquaMind - น้ำใจในทุกหยด</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&family=Prompt:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.9.6/lottie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+            background: linear-gradient(145deg, #004d73 0%, #00c4cc 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 20s ease infinite;
+            color: #EAF4F4;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        h1, h2, h3 {
+            font-family: 'Prompt', 'Noto Sans Thai', sans-serif;
+            font-weight: 900;
+        }
+
+        /* Scroll Depth Indicator */
+        .scroll-depth {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+        }
+
+        .scroll-depth-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #004d73, #A3DFFA);
+            width: 0;
+            transition: width 0.2s ease;
+        }
+
+        .scroll-depth-text {
+            position: fixed;
+            top: 8px;
+            right: 16px;
+            color: #EAF4F4;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: rgba(0, 77, 115, 0.8);
+            padding: 4px 8px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 4px; /* Adjusted to account for scroll depth bar */
+            left: 0;
+            width: 100%;
+            background: rgba(0, 77, 115, 0.2);
+            backdrop-filter: blur(30px);
+            border-bottom: 2px solid rgba(163, 223, 250, 0.3);
+            z-index: 1000;
+            transition: background 0.4s, box-shadow 0.4s;
+        }
+
+        .navbar.scrolled {
+            background: rgba(0, 77, 115, 0.95);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .navbar-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            gap: 2rem;
+        }
+
+        .navbar-logo {
+            font-family: 'Prompt', 'Noto Sans Thai', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #EAF4F4;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            text-decoration: none;
+            transition: color 0.3s, transform 0.3s;
+            white-space: nowrap;
+        }
+
+        .navbar-logo:hover {
+            color: #A3DFFA;
+            transform: scale(1.05);
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .navbar-menu a,
+        .navbar-menu label {
+            color: #EAF4F4;
+            text-decoration: none;
+            position: relative;
+            transition: color 0.3s, transform 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-menu a:hover,
+        .navbar-menu label:hover {
+            color: #A3DFFA;
+            transform: scale(1.2);
+        }
+
+        .navbar-menu a svg,
+        .navbar-menu label svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .navbar-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background: #A3DFFA;
+            transition: width 0.4s ease;
+        }
+
+        .navbar-menu a:hover::after {
+            width: 24px;
+        }
+
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 77, 115, 0.95);
+            color: #EAF4F4;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tooltip:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(8px);
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: rgba(0, 77, 115, 0.98);
+            backdrop-filter: blur(20px);
+            min-width: 200px;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.35);
+            z-index: 1;
+            border-radius: 12px;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .dropdown-content a {
+            color: #EAF4F4;
+            padding: 16px 20px;
+            display: block;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background: rgba(163, 223, 250, 0.5);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            width: 35px;
+            height: 5px;
+            background: #EAF4F4;
+            margin: 4px 0;
+            transition: all 0.4s;
+        }
+
+        #mobile-menu-toggle:checked ~ .navbar-menu {
+            display: flex;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .navbar-menu {
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: rgba(0, 77, 115, 0.98);
+                padding: 2.5rem;
+                transform: translateY(-100%);
+                transition: transform 0.4s ease;
+            }
+
+            .navbar-menu a,
+            .navbar-menu label {
+                font-size: 1.2rem;
+            }
+
+            .hamburger {
+                display: flex;
+                position: absolute;
+                right: 2rem;
+            }
+
+            .navbar-logo {
+                font-size: 2rem;
+                margin: 0;
+            }
+
+            .navbar-container {
+                justify-content: space-between;
+                padding: 1rem 1.5rem;
+            }
+        }
+
+        .hero-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(rgba(0, 77, 115, 0.5), rgba(0, 77, 115, 0.5)), url('https://images.unsplash.com/photo-1519606247868-4d7d3c15e731') center/cover no-repeat;
+            background-attachment: fixed;
+        }
+
+        .wave-divider {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 300px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113.64,28.06,1200,56.86V0Z" opacity="0.95" fill="#004d73"/></svg>') repeat-x;
+            background-size: 1800px 300px;
+            animation: wave 10s linear infinite;
+            z-index: 5;
+        }
+
+        @keyframes wave {
+            0% { background-position: 0 0; }
+            100% { background-position: 1800px 0; }
+        }
+
+        .ripple {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
+            transform: translate(-50%, -50%);
+            animation: ripple 2s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            0% { width: 0; height: 0; opacity: 0.7; }
+            100% { width: 300px; height: 300px; opacity: 0; }
+        }
+
+        .drop {
+            position: fixed;
+            width: 20px;
+            height: 35px;
+            background: rgba(163, 223, 250, 0.85);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: drip 3s ease-in infinite;
+            pointer-events: none;
+        }
+
+        @keyframes drip {
+            0% { transform: translateY(-100px) scale(0.6); opacity: 1; }
+            70% { opacity: 0.8; }
+            100% { transform: translateY(100vh) scale(1.4); opacity: 0; }
+        }
+
+        .bubble {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: bubble 8s ease-in infinite;
+            pointer-events: none;
+        }
+
+        @keyframes bubble {
+            0% { transform: translateY(0) scale(0.3); opacity: 0.7; }
+            100% { transform: translateY(-100vh) scale(1.8); opacity: 0; }
+        }
+
+        .water-particle {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: rgba(163, 223, 250, 0.9);
+            border-radius: 50%;
+            animation: particleFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translate(0, 0); opacity: 1; }
+            50% { transform: translate(30px, -30px); opacity: 0.6; }
+            100% { transform: translate(0, 0); opacity: 1; }
+        }
+
+        .decor-wave {
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            fill: rgba(163, 223, 250, 0.7);
+            animation: bob 2.5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .decor-droplet {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            animation: bounce 1.5s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .decor-bubble {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            fill: rgba(255, 255, 255, 0.5);
+            animation: floatBubble 4s ease-in infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        @keyframes bob {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.1); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        @keyframes floatBubble {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(-100px) rotate(20deg); opacity: 0; }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        .waterwheel-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            margin: 0 auto;
+        }
+
+        .side-waterwheel-container {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            top: 50%;
+            left: 5%;
+            transform: translateY(-50%);
+            z-index: 8;
+        }
+
+        .waterwheel {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#A3DFFA" stroke-width="6"/><path d="M50 5 L50 25 M50 75 L50 95 M5 50 L25 50 M75 50 L95 50 M28.28 28.28 L41.42 41.42 M58.58 58.58 L71.72 71.72 M28.28 71.72 L41.42 58.58 M58.58 41.42 L71.72 28.28" stroke="#A3DFFA" stroke-width="6"/></svg>') center/contain no-repeat;
+            animation: rotate 12s linear infinite;
+            transition: animation-duration 0.3s;
+        }
+
+        .side-waterwheel {
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="#A3DFFA" stroke-width="6"/><path d="M50 5 L50 25 M50 75 L50 95 M5 50 L25 50 M75 50 L95 50 M28.28 28.28 L41.42 41.42 M58.58 58.58 L71.72 71.72 M28.28 71.72 L41.42 58.58 M58.58 41.42 L71.72 28.28" stroke="#A3DFFA" stroke-width="6"/></svg>') center/contain no-repeat;
+            animation: rotate 15s linear infinite;
+            transition: animation-duration 0.3s;
+        }
+
+        .waterwheel:hover,
+        .side-waterwheel:hover {
+            animation-duration: 6s;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .waterwheel-droplet {
+            position: absolute;
+            width: 20px;
+            height: 30px;
+            background: rgba(163, 223, 250, 0.9);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            animation: drip 2.5s ease-in infinite;
+        }
+
+        .side-waterwheel .waterwheel-droplet {
+            width: 25px;
+            height: 35px;
+            animation: drip 3s ease-in infinite;
+        }
+
+        .waterwheel-droplet:nth-child(1) {
+            top: 0;
+            left: 50%;
+            animation-delay: 0s;
+        }
+
+        .waterwheel-droplet:nth-child(2) {
+            top: 10%;
+            left: 70%;
+            animation-delay: 0.5s;
+        }
+
+        .waterwheel-droplet:nth-child(3) {
+            top: 10%;
+            left: 30%;
+            animation-delay: 1s;
+        }
+
+        .waterwheel-droplet:nth-child(4) {
+            bottom: 10%;
+            left: 50%;
+            animation-delay: 1.5s;
+        }
+
+        .side-waterwheel .waterwheel-droplet:nth-child(1) {
+            top: 0;
+            left: 50%;
+            animation-delay: 0s;
+        }
+
+        .side-waterwheel .waterwheel-droplet:nth-child(2) {
+            top: 10%;
+            left: 70%;
+            animation-delay: 0.6s;
+        }
+
+        .side-waterwheel .waterwheel-droplet:nth-child(3) {
+            top: 10%;
+            left: 30%;
+            animation-delay: 1.2s;
+        }
+
+        .side-waterwheel .waterwheel-droplet:nth-child(4) {
+            bottom: 10%;
+            left: 50%;
+            animation-delay: 1.8s;
+        }
+
+        .waterwheel-ripple {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            border: 2px solid #A3DFFA;
+            transform: translate(-50%, 0);
+            animation: rippleGrow 4s ease-out infinite;
+        }
+
+        .side-waterwheel .waterwheel-ripple {
+            bottom: -10%;
+            border: 3px solid #A3DFFA;
+            animation: rippleGrow 5s ease-out infinite;
+        }
+
+        @keyframes rippleGrow {
+            0% { width: 0; height: 0; opacity: 0.7; }
+            100% { width: 200px; height: 200px; opacity: 0; }
+        }
+
+        @media (max-width: 1024px) {
+            .side-waterwheel-container {
+                width: 500px;
+                height: 500px;
+                left: 2%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .side-waterwheel-container {
+                width: 300px;
+                height: 300px;
+                top: 10%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .side-waterwheel-container {
+                width: 200px;
+                height: 200px;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.5s, box-shadow 0.5s;
+            transform-style: preserve-3d;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .card:hover {
+            transform: translateY(-20px) rotateX(12deg) rotateY(12deg);
+            box-shadow: 0 30px 60px rgba(0, 77, 115, 0.5), 0 0 20px rgba(163, 223, 250, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(163, 223, 250, 0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 25px 25px 0 0;
+            transition: transform 0.5s;
+        }
+
+        .card:hover .card-img {
+            transform: scale(1.05);
+        }
+
+        .btn {
+            position: relative;
+            padding: 1.75rem 4rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            border-radius: 70px;
+            background: rgba(0, 77, 115, 0.98);
+            backdrop-filter: blur(12px);
+            color: #EAF4F4;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            margin: 1rem;
+            display: inline-block;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 77, 115, 0.6), 0 0 35px rgba(163, 223, 250, 0.8);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.7s, height 0.7s;
+        }
+
+        .btn:hover::before {
+            width: 600px;
+            height: 600px;
+        }
+
+        .btn:active::before {
+            width: 600px;
+            height: 600px;
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn-water {
+            background: rgba(163, 223, 250, 0.98);
+            color: #004d73;
+            animation: waterPulse 3s infinite;
+        }
+
+        @keyframes waterPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-explore:hover {
+            background: #A3DFFA;
+            color: #004d73;
+        }
+
+        .btn-learn:hover {
+            background: #F1FAEE;
+            color: #004d73;
+        }
+
+        .btn-reset:hover {
+            background: #FF6B6B;
+            color: #EAF4F4;
+        }
+
+        .btn-share:hover {
+            background: #48BB78;
+            color: #EAF4F4;
+        }
+
+        #dark-mode-toggle:checked ~ .dark-mode {
+            background: linear-gradient(145deg, #001219 0%, #005F73 100%);
+            color: #A3DFFA;
+        }
+
+        .dark-mode .card {
+            background: rgba(0, 18, 25, 0.98);
+            color: #A3DFFA;
+        }
+
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 4rem;
+            font-size: 3.5rem;
+            font-weight: 900;
+            font-family: 'Prompt', 'Noto Sans Thai', sans-serif;
+            background: linear-gradient(45deg, #004d73, #A3DFFA, #EAF4F4, #A3DFFA, #004d73);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 
+                2px 2px 4px rgba(0, 77, 115, 0.6),
+                -2px -2px 4px rgba(163, 223, 250, 0.4),
+                0 0 15px rgba(163, 223, 250, 0.8);
+            animation: waterFlow 5s ease-in-out infinite;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes waterFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 15px;
+            background: radial-gradient(circle, #A3DFFA, #004d73);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            bottom: -20px;
+            left: 10%;
+            animation: dripEffect 2s ease-in-out infinite;
+            opacity: 0.8;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 18px;
+            background: radial-gradient(circle, #A3DFFA, #004d73);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            bottom: -25px;
+            right: 15%;
+            animation: dripEffect 2.5s ease-in-out infinite 0.5s;
+            opacity: 0.8;
+        }
+
+        @keyframes dripEffect {
+            0% { transform: translateY(0) scale(0.8); opacity: 0.8; }
+            50% { transform: translateY(20px) scale(1.2); opacity: 0.4; }
+            100% { transform: translateY(40px) scale(0.8); opacity: 0; }
+        }
+
+        .water-droplet {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle, #A3DFFA, #004d73);
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: bounce 0.7s ease infinite alternate;
+        }
+
+        /* Enhanced Input Field Styling */
+        input[type="number"],
+        input[type="email"] {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(163, 223, 250, 0.05));
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(163, 223, 250, 0.3);
+            color: #EAF4F4;
+            padding: 1.25rem 1.5rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            width: 100%;
+        }
+
+        input[type="number"]:hover,
+        input[type="email"]:hover {
+            border-color: #A3DFFA;
+            box-shadow: 0 0 10px rgba(163, 223, 250, 0.4);
+        }
+
+        input[type="number"]:focus,
+        input[type="email"]:focus {
+            border-color: #A3DFFA;
+            box-shadow: 0 0 15px rgba(163, 223, 250, 0.6), inset 0 0 5px rgba(163, 223, 250, 0.3);
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Ripple Effect on Input Focus */
+        input[type="number"]::before,
+        input[type="email"]::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(163, 223, 250, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+            pointer-events: none;
+        }
+
+        input[type="number"]:focus::before,
+        input[type="email"]:focus::before {
+            width: 200px;
+            height: 200px;
+            opacity: 0;
+        }
+
+        /* Placeholder Styling */
+        input[type="number"]::placeholder,
+        input[type="email"]::placeholder {
+            color: rgba(234, 244, 244, 0.6);
+            font-weight: 400;
+        }
+
+        /* Input Container for Labels */
+        .input-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .input-container label {
+            position: absolute;
+            top: -0.75rem;
+            left: 1.5rem;
+            background: linear-gradient(180deg, rgba(0, 77, 115, 0.95), rgba(0, 77, 115, 0.95));
+            padding: 0 0.5rem;
+            color: #A3DFFA;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+
+        input:focus + label,
+        input:not(:placeholder-shown) + label {
+            top: -1rem;
+            font-size: 0.8rem;
+            color: #EAF4F4;
+        }
+
+        #game-area {
+            background: linear-gradient(rgba(0, 77, 115, 0.3), rgba(163, 223, 250, 0.2));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 25px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .draggable {
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            border-radius: 15px;
+        }
+
+        .draggable:hover {
+            transform: scale(1.1);
+        }
+
+        #drop-zone {
+            background: rgba(255, 255, 255, 0.08);
+            transition: background 0.5s ease;
+            border-radius: 15px;
+        }
+
+        #scroll-top {
+            position: fixed;
+            bottom: 3rem;
+            right: 3rem;
+            background: #A3DFFA;
+            color: #004d73;
+            padding: 1.25rem;
+            border-radius: 50%;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1000;
+        }
+
+        #scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #scroll-top:hover {
+            transform: translateY(-8px);
+            background: #F1FAEE;
+        }
+
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #004d73;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 1s ease;
+        }
+
+        .preloader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .preloader-logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #EAF4F4;
+            animation: pulse 1.8s ease infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        .quote {
+            font-style: italic;
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 2rem 0;
+            color: #A3DFFA;
+        }
+
+        .newsletter-form {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .newsletter-btn {
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            background: #A3DFFA;
+            color: #004d73;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .newsletter-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(163, 223, 250, 0.5);
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- Scroll Depth Indicator -->
+    <div class="scroll-depth">
+        <div class="scroll-depth-bar"></div>
+    </div>
+    <div class="scroll-depth-text">0%</div>
+
+    <!-- Preloader -->
+    <div class="preloader">
+        <div class="preloader-logo">AquaMind</div>
+    </div>
+
+    <input type="checkbox" id="dark-mode-toggle" class="hidden">
+    <input type="checkbox" id="mobile-menu-toggle" class="hidden">
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="#" class="navbar-logo">AquaMind</a>
+            <label for="mobile-menu-toggle" class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </label>
+            <div class="navbar-menu">
+                <div class="navbar-menu-left">
+                    <a href="#explore" class="tooltip" data-tooltip="สำรวจ" aria-label="สำรวจ">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M15.5 14.5c0-2.76-2.24-5-5-5s-5 2.24-5 5 2.24 5 5 5 5-2.24 5-5zm2.12-1.88l4.59-4.59 1.41 1.41-5.29 5.29-1.41-1.41 4.59-4.59z"></path>
+                        </svg>
+                    </a>
+                    <a href="#learn" class="tooltip" data-tooltip="เคล็ดลับ" aria-label="เคล็ดลับ">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path>
+                        </svg>
+                    </a>
+                </div>
+                <div class="navbar-menu-right">
+                    <a href="#game-area" class="tooltip" data-tooltip="เกม" aria-label="เกม">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-2 8h-4v2h-2v-2H9v-2h4v-2h2v2h4v2z"></path>
+                        </svg>
+                    </a>
+                    <a href="#calculator-section" class="tooltip" data-tooltip="คำนวณ" aria-label="คำนวณ">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16h-2v-2h2v2zm0-4h-2v-2h2v2zm-4 4h-2v-2h2v2zm0-4h-2v-2h2v2zm-4 4H7v-2h2v2zm0-4H7v-2h2v2zm8-8H7V7h10v2z"></path>
+                        </svg>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="tooltip" data-tooltip="อื่นๆ" aria-label="อื่นๆ">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="6" cy="12" r="2" />
+                                <circle cx="18" cy="12" r="2" />
+                            </svg>
+                        </a>
+                        <div class="dropdown-content">
+                            <a href="#">เกี่ยวกับเรา</a>
+                            <a href="#">ติดต่อ</a>
+                            <a href="#">บล็อก</a>
+                        </div>
+                    </div>
+                    <label for="dark-mode-toggle" class="tooltip" data-tooltip="โหมดมืด" aria-label="สลับโหมดมืด">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 3a9 9 0 0 0-9 9c0 4.97 4.03 9 9 9s9-4.03 9-9c0-.83-.11-1.63-.31-2.39A6.97 6.97 0 0 1 12 5c-3.87 0-7 3.13-7 7s3.13 7 7 7c3.87 0 7-3.13 7-7 0-1.65-.56-3.17-1.5-4.37A9.02 9.02 0 0 0 12 3z"></path>
+                        </svg>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="dark-mode min-h-screen pt-24">
+        <!-- Hero Section with Side Waterwheel -->
+        <section class="hero-section">
+            <div class="wave-divider"></div>
+            <div id="lottie-wave"></div>
+            <div class="side-waterwheel-container">
+                <div class="waterwheel side-waterwheel">
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-ripple"></div>
+                </div>
+            </div>
+            <div class="hero-content">
+                <div class="waterwheel-container">
+                    <div class="waterwheel"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-droplet"></div>
+                    <div class="waterwheel-ripple"></div>
+                </div>
+                <p class="text-2xl mt-8 max-w-2xl mx-auto">หมุนวงล้อแห่งน้ำเพื่อสำรวจพลังงานสะอาดและการอนุรักษ์น้ำ!</p>
+                <div class="mt-12 flex justify-center gap-10">
+                    <a href="#explore" class="btn btn-explore">สำรวจเลย</a>
+                    <a href="#learn" class="btn btn-water">เรียนรู้เพิ่มเติม</a>
+                </div>
+            </div>
+            <svg class="decor-wave" style="top: 20%; left: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#A3DFFA" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="top: 30%; right: 10%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="bottom: 15%; left: 15%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Water Usage Stats -->
+        <section id="explore" class="py-40 px-8 relative" style="background: linear-gradient(rgba(0, 77, 115, 0.3), rgba(0, 77, 115, 0.3)), url('https://images.unsplash.com/photo-1534278931915-99850bb23756') center/cover no-repeat;">
+            <div class="wave-divider" style="top: 0; transform: rotate(180deg);"></div>
+            <h2 class="section-title text-center">คุณใช้น้ำไปเท่าไหร่?</h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mt-8">ค้นพบการใช้น้ำในชีวิตประจำวันของคุณผ่านการแสดงผลข้อมูลที่เข้าใจง่ายและสวยงาม</p>
+            <canvas id="waterChart" class="mt-24 max-w-6xl mx-auto"></canvas>
+            <div class="flex justify-center mt-12">
+                <a href="#" class="btn btn-learn">ดูรายละเอียดเพิ่มเติม</a>
+            </div>
+            <div id="bubble-container" class="absolute inset-0 pointer-events-none"></div>
+            <svg class="decor-wave" style="top: 10%; right: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#A3DFFA" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="bottom: 20%; left: 8%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="top: 25%; left: 20%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Tips & Infographics -->
+        <section id="learn" class="py-40 px-8 bg-[#A3DFFA] text-[#004d73] relative">
+            <div class="wave-divider" style="top: 0; transform: rotate(180deg);"></div>
+            <h2 class="section-title text-center">เคล็ดลับประหยัดน้ำ</h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mt-8">เรียนรู้วิธีง่ายๆ ที่จะช่วยคุณลดการใช้น้ำและรักษาทรัพยากรธรรมชาติ</p>
+            <div class="quote">"ทุกหยดน้ำมีค่า เริ่มต้นประหยัดจากวันนี้เพื่ออนาคตที่ยั่งยืน" - AquaMind</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-20 mt-24 max-w-7xl mx-auto">
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd" alt="ปิดน้ำขณะแปรงฟัน" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">ปิดน้ำขณะแปรงฟัน</h3>
+                        <p class="mt-8 text-lg">การปิดน้ำขณะแปรงฟันช่วยประหยัดน้ำได้ถึง <span class="font-bold">6 ลิตร</span> ต่อนาที! ลองนึกภาพว่าคุณสามารถประหยัดน้ำได้มากแค่ไหนในหนึ่งสัปดาห์</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">เรียนรู้เพิ่ม</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c" alt="ใช้ฝักบัวประหยัดน้ำ" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">ใช้ฝักบัวประหยัดน้ำ</h3>
+                        <p class="mt-8 text-lg">ฝักบัวประหยัดน้ำสามารถลดการใช้น้ำลงถึง <span class="font-bold">50%</span> ต่อการอาบน้ำ ช่วยทั้งประหยัดน้ำและลดค่าน้ำ</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">เรียนรู้เพิ่ม</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://static.cdntap.com/tap-assets-prod/wp-content/uploads/sites/25/2016/03/%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%A3%E0%B8%B1%E0%B9%88%E0%B8%A72-2.jpg" alt="ตรวจสอบท่อรั่ว" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">ตรวจสอบท่อรั่ว</h3>
+                        <p class="mt-8 text-lg">การรั่วเพียงเล็กน้อยอาจสูญเสียน้ำถึง <span class="font-bold">20 ลิตร</span> ต่อวัน ตรวจเช็คท่อประจำเพื่อประหยัดน้ำ</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">เรียนรู้เพิ่ม</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://kaset.today/wp-content/uploads/2021/05/1-33.jpg" alt="รดน้ำต้นไม้ตอนเช้า" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">รดน้ำต้นไม้ตอนเช้า</h3>
+                        <p class="mt-8 text-lg">รดน้ำต้นไม้ในตอนเช้าช่วยลดการระเหยของน้ำ ทำให้ประหยัดน้ำได้ถึง <span class="font-bold">30%</span> เมื่อเทียบกับการรดน้ำตอนกลางวัน</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">เรียนรู้เพิ่ม</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://image.bangkokbiznews.com/uploads/images/md/2022/05/2iX1B9L3bQPTt9eCyDts.webp" alt="เก็บน้ำฝน" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">เก็บน้ำฝน</h3>
+                        <p class="mt-8 text-lg">การเก็บน้ำฝนเพื่อใช้รดน้ำต้นไม้หรือล้างรถสามารถประหยัดน้ำประปาได้ถึง <span class="font-bold">100 ลิตร</span> ต่อครั้ง</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">เรียนรู้เพิ่ม</a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center mt-12">
+                <a href="#" class="btn btn-explore">ดูเคล็ดลับทั้งหมด</a>
+            </div>
+            <svg class="decor-wave" style="top: 5%; left: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#004d73" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="top: 15%; right: 10%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="bottom: 10%; left: 15%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Mini Game -->
+        <section id="game-area" class="py-40 px-8 relative" style="background: linear-gradient(rgba(0, 77, 115,0.3), rgba(0, 77, 115, 0.3)), url('https://images.unsplash.com/photo-1513553404607-151db04f4b6b') center/cover no-repeat;">
+            <div class="wave-divider" style="top: 0; transform: rotate(180deg);"></div>
+            <h2 class="section-title text-center">เกม: จัดการน้ำในบ้าน</h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mt-8">สนุกกับการลากและวางอุปกรณ์ในบ้านเพื่อเรียนรู้ว่าคุณใช้น้ำไปเท่าไหร่!</p>
+            <div class="quote">"การเรียนรู้ผ่านเกมทำให้การอนุรักษ์น้ำเป็นเรื่องสนุก!" - AquaMind</div>
+            <div id="game-area" class="mt-24 max-w-6xl mx-auto bg-[rgba(255,255,255,0.1)] backdrop-filter blur(20px) p-16 rounded-3xl shadow-3xl">
+                <p class="text-xl mb-10">ลากอุปกรณ์ไปวางในบ้านเพื่อคำนวณการใช้น้ำ</p>
+                <div id="draggable-items" class="flex gap-10">
+                    <div class="draggable bg-[#004d73] text-white p-8 rounded-xl cursor-move" draggable="true">ฝักบัว</div>
+                    <div class="draggable bg-[#004d73] text-white p-8 rounded-xl cursor-move" draggable="true">ก็อกน้ำ</div>
+                    <div class="draggable bg-[#004d73] text-white p-8 rounded-xl cursor-move" draggable="true">เครื่องซักผ้า</div>
+                </div>
+                <div id="drop-zone" class="mt-10 h-64 border-2 border-dashed border-[#A3DFFA] rounded-xl flex items-center justify-center text-gray-200">วางอุปกรณ์ที่นี่</div>
+                <p id="water-usage" class="mt-10 text-2xl font-semibold">น้ำที่ใช้: <span id="usage-count">0</span> ลิตร</p>
+                <div class="flex justify-center gap-6 mt-8">
+                    <button onclick="resetGame()" class="btn btn-reset">รีเซ็ตเกม</button>
+                    <a href="#" class="btn btn-learn">ดูคะแนนสูงสุด</a>
+                </div>
+            </div>
+            <svg class="decor-wave" style="top: 10%; right: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#A3DFFA" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="bottom: 15%; left: 10%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="top: 20%; left: 20%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Water Cost Calculator -->
+        <section class="py-40 px-8 bg-[#004d73] text-white relative" id="calculator-section">
+            <div class="wave-divider" style="top: 0; transform: rotate(180deg);"></div>
+            <h2 class="section-title text-center">คำนวณค่าน้ำของคุณ</h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mt-8">ป้อนข้อมูลการใช้น้ำของคุณเพื่อดูว่าคุณสามารถประหยัดได้มากแค่ไหน</p>
+            <div class="quote">"รู้เท่าทันการใช้น้ำ ลดค่าใช้จ่าย สร้างอนาคตสีเขียว" - AquaMind</div>
+            <div class="max-w-xl mx-auto mt-24 relative">
+                <div class="input-container">
+                    <input type="number" id="people" min="1" value="1" placeholder=" " aria-label="จำนวนคนในบ้าน">
+                    <label>จำนวนคนในบ้าน</label>
+                </div>
+                <div class="input-container">
+                    <input type="number" id="shower" min="0" value="5" placeholder=" " aria-label="เวลาอาบน้ำต่อคน">
+                    <label>เวลาอาบน้ำต่อคน (นาที)</label>
+                </div>
+                <div class="input-container">
+                    <input type="number" id="dishes" min="0" value="1" placeholder=" " aria-label="ครั้งที่ล้างจานต่อวัน">
+                    <label>ครั้งที่ล้างจานต่อวัน</label>
+                </div>
+                <div class="flex justify-center gap-6">
+                    <button onclick="calculateWaterCost()" class="btn w-full px-10 py-5 bg-[#A3DFFA] text-[#004d73] rounded-xl hover:bg-[#F1FAEE] text-xl font-semibold">คำนวณ</button>
+                    <button onclick="shareResult()" class="btn btn-share w-full px-10 py-5 bg-[#48BB78] text-white rounded-xl hover:bg-[#68D391] text-xl font-semibold">แชร์ผลลัพธ์</button>
+                </div>
+                <p id="cost-result" class="mt-10 text-2xl text-center">ผลลัพธ์: -</p>
+            </div>
+            <svg class="decor-wave" style="top: 5%; left: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#A3DFFA" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="top: 20%; right: 8%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="bottom: 10%; left: 15%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Community Stories -->
+        <section class="py-40 px-8 relative" style="background: linear-gradient(rgba(0, 77, 115, 0.3), rgba(0, 77, 115, 0.3)), url('https://images.unsplash.com/photo-1507522363938-76341405e4e4') center/cover no-repeat;">
+            <div class="wave-divider" style="top: 0; transform: rotate(180deg);"></div>
+            <h2 class="section-title text-center">เรื่องราวจากชุมชน</h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mt-8">ฟังเรื่องราวจากผู้ที่เปลี่ยนแปลงวิถีชีวิตเพื่ออนุรักษ์น้ำ</p>
+            <div class="quote">"การเปลี่ยนแปลงเล็กๆ นำไปสู่ผลลัพธ์ที่ยิ่งใหญ่" - AquaMind</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-20 mt-24 max-w-7xl mx-auto">
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f" alt="ครอบครัวประหยัดน้ำ" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">ครอบครัวของเรา</h3>
+                        <p class="mt-8 text-lg">เราเริ่มใช้ถังเก็บน้ำฝนและลดเวลาอาบน้ำลง ผลคือประหยัดน้ำได้ถึง <span class="font-bold">500 ลิตร</span> ต่อเดือน!</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">อ่านเพิ่มเติม</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1524504388940-b4f74271f4ef" alt="ชุมชนสีเขียว" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">ชุมชนของเรา</h3>
+                        <p class="mt-8 text-lg">ชุมชนของเราร่วมมือกันติดตั้งระบบน้ำรีไซเคิล ช่วยลดการใช้น้ำลง <span class="font-bold">40%</span></p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">อ่านเพิ่มเติม</a>
+                    </div>
+                </div>
+                <div class="card">
+                    <img src="https://images.unsplash.com/photo-1532622785990-d08844bec40c" alt="เด็กๆ กับน้ำ" class="card-img" loading="lazy">
+                    <div class="p-16">
+                        <h3 class="text-3xl font-semibold">เด็กๆ ของเรา</h3>
+                        <p class="mt-8 text-lg">เด็กๆ ในโรงเรียนเรียนรู้การประหยัดน้ำผ่านเกมและกิจกรรม สร้างนิสัยรักน้ำตั้งแต่เล็ก</p>
+                        <a href="#" class="btn btn-learn mt-6 inline-block">อ่านเพิ่มเติม</a>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center mt-12">
+                <a href="#" class="btn btn-explore">ดูเรื่องราวทั้งหมด</a>
+            </div>
+            <svg class="decor-wave" style="top: 10%; right: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#A3DFFA" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="bottom: 15%; left: 10%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="top: 20%; left: 15%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Download & Share -->
+        <section class="py-40 px-8 relative" style="background: linear-gradient(rgba(0, 77, 115, 0.3), rgba(0, 77, 115, 0.3)), url('https://images.unsplash.com/photo-1473116763249-6b466f863805') center/cover no-repeat;">
+            <div class="wave-divider" style="top: 0; transform: rotate(180deg);"></div>
+            <h2 class="section-title text-center">ดาวน์โหลดและแชร์</h2>
+            <p class="text-xl text-center max-w-3xl mx-auto mt-8">แบ่งปันความรู้และแรงบันดาลใจในการอนุรักษ์น้ำกับเพื่อนและครอบครัวของคุณ</p>
+            <div class="flex justify-center gap-10 mt-24">
+                <a href="#" class="btn px-12 py-5 bg-[#004d73] text-white rounded-xl hover:bg-[#A3DFFA] hover:text-[#004d73] text-xl font-semibold">ดาวน์โหลดโปสเตอร์ PDF</a>
+                <button class="btn px-12 py-5 bg-[#A3DFFA] text-[#004d73] rounded-xl hover:bg-[#F1FAEE] text-xl font-semibold">แชร์ไปยัง Line</button>
+                <button class="btn btn-share px-12 py-5 bg-[#48BB78] text-white rounded-xl hover:bg-[#68D391] text-xl font-semibold">แชร์ไปยัง Facebook</button>
+            </div>
+            <svg class="decor-wave" style="top: 10%; right: 5%;" viewBox="0 0 24 12">
+                <path d="M0 6c2 2 4 2 6 0s4-2 6 0 4 2 6 0 4-2 6 0" fill="none" stroke="#A3DFFA" stroke-width="2" />
+            </svg>
+            <img src="https://www.pngall.com/wp-content/uploads/2017/03/Water-Drop-PNG.png" class="decor-droplet" style="bottom: 15%; left: 10%;" loading="lazy" alt="Decorative droplet">
+            <svg class="decor-bubble" style="top: 20%; left: 15%;" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+            </svg>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-20 px-8 bg-[#004d73] text-white text-center">
+            <div class="max-w-7xl mx-auto">
+                <p class="text-xl mb-6">© 2025 AquaMind. สงวนลิขสิทธิ์.</p>
+                <div class="flex justify-center gap-8 mb-8">
+                    <a href="#" class="text-[#A3DFFA] hover:text-[#F1FAEE] transition-colors duration-300"
+                        aria-label="Facebook">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z">
+                            </path>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-[#A3DFFA] hover:text-[#F1FAEE] transition-colors duration-300"
+                        aria-label="Twitter">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                            </path>
+                        </svg>
+                    </a>
+                    <a href="#" class="text-[#A3DFFA] hover:text-[#F1FAEE] transition-colors duration-300"
+                        aria-label="Instagram">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.326 3.608 1.301.975.975 1.24 2.242 1.301 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.326 2.633-1.301 3.608-.975.975-2.242 1.24-3.608 1.301-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.326-3.608-1.301-.975-.975-1.24-2.242-1.301-3.608-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.062-1.366.326-2.633 1.301-3.608.975-.975 2.242-1.24 3.608-1.301 1.266-.058 1.646-.07 4.85-.07m0-2.163c-3.259 0-3.667.014-4.947.072-1.453.066-2.758.404-3.757 1.403S2.125 4.937 2.059 6.39c-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.066 1.453.404 2.758 1.403 3.757s2.304 1.337 3.757 1.403c1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c1.453-.066 2.758-.404 3.757-1.403s1.337-2.304 1.403-3.757c.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.066-1.453-.404-2.758-1.403-3.757s-2.304-1.337-3.757-1.403c-1.28-.058-1.688-.072-4.947-.072zM12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.441s.645 1.441 1.441 1.441 1.441-.645 1.441-1.441-.645-1.441-1.441-1.441z">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+                <div class="flex justify-center gap-8 mb-8">
+                    <a href="#"
+                        class="text-[#A3DFFA] hover:text-[#F1FAEE] transition-colors duration-300">เกี่ยวกับเรา</a>
+                    <a href="#" class="text-[#A3DFFA] hover:text-[#F1FAEE] transition-colors duration-300">ติดต่อ</a>
+                    <a href="#"
+                        class="text-[#A3DFFA] hover:text-[#F1FAEE] transition-colors duration-300">นโยบายความเป็นส่วนตัว</a>
+                </div>
+                <div class="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="สมัครรับจดหมายข่าว"
+                        aria-label="สมัครรับจดหมายข่าว">
+                    <button class="newsletter-btn">สมัคร</button>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Lottie Animation -->
+        <div id="lottie-fish" class="fixed bottom-16 right-16 w-48 h-48 z-50"></div>
+
+        <!-- Scroll to Top Button -->
+        <button id="scroll-top"
+            class="fixed bottom-3rem right-3rem bg-[#A3DFFA] text-[#004d73] p-1.25rem rounded-full shadow-lg hover:bg-[#F1FAEE] transition-all duration-500"
+            aria-label="เลื่อนไปด้านบน">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18">
+                </path>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Preloader
+        window.addEventListener('load', () => {
+            const preloader = document.querySelector('.preloader');
+            setTimeout(() => {
+                preloader.classList.add('hidden');
+            }, 1000);
+        });
+
+        // Navigation Bar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            const scrollTopBtn = document.getElementById('scroll-top');
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+            scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
+        });
+
+        // Scroll to Top
+        document.getElementById('scroll-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Smooth Scroll for Anchor Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Mouse Ripple Effect
+        document.querySelector('.hero-section').addEventListener('mousemove', e => {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = e.clientX + 'px';
+            ripple.style.top = e.clientY + 'px';
+            document.querySelector('.hero-section').appendChild(ripple);
+            setTimeout(() => ripple.remove(), 2000);
+        });
+
+        // Enhanced Water Drops
+        function createDrop() {
+            const drop = document.createElement('div');
+            drop.className = 'drop';
+            drop.style.left = Math.random() * 100 + 'vw';
+            drop.style.animationDuration = Math.random() * 2 + 2.5 + 's';
+            document.body.appendChild(drop);
+            setTimeout(() => drop.remove(), 3000);
+        }
+        setInterval(createDrop, 300);
+
+        // Floating Bubbles
+        function createBubble() {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.style.left = Math.random() * 100 + '%';
+            bubble.style.animationDuration = Math.random() * 4 + 5 + 's';
+            document.querySelector('#bubble-container').appendChild(bubble);
+            setTimeout(() => bubble.remove(), 8000);
+        }
+        setInterval(createBubble, 600);
+
+        // Water Particles around Buttons
+        function createParticle(button) {
+            const particle = document.createElement('div');
+            particle.className = 'water-particle';
+            particle.style.left = Math.random() * button.offsetWidth + 'px';
+            particle.style.top = Math.random() * button.offsetHeight + 'px';
+            button.appendChild(particle);
+            setTimeout(() => particle.remove(), 3000);
+        }
+        document.querySelectorAll('.btn').forEach(btn => {
+            setInterval(() => createParticle(btn), 800);
+        });
+
+        // Chart.js Water Usage Chart
+        const ctx = document.getElementById('waterChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['อาบน้ำ', 'ล้างจาน', 'ซักผ้า', 'รดน้ำต้นไม้', 'อื่นๆ'],
+                datasets: [{
+                    label: 'การใช้น้ำ (ลิตร)',
+                    data: [150, 40, 80, 60, 30],
+                    backgroundColor: 'rgba(163, 223, 250, 0.6)',
+                    borderColor: '#A3DFFA',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'ลิตร',
+                            color: '#EAF4F4'
+                        },
+                        ticks: {
+                            color: '#EAF4F4'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'กิจกรรม',
+                            color: '#EAF4F4'
+                        },
+                        ticks: {
+                            color: '#EAF4F4'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#EAF4F4'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Lottie Animations
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-wave'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets.lottiefiles.com/packages/lf20_3p7qjf7m.json' // Water wave animation
+        });
+
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-fish'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets.lottiefiles.com/packages/lf20_khwrsgyu.json' // Fish animation
+        });
+
+        // Drag and Drop Game
+        let totalUsage = 0;
+        const waterUsage = {
+            'ฝักบัว': 15,
+            'ก็อกน้ำ': 10,
+            'เครื่องซักผ้า': 50
+        };
+
+        document.querySelectorAll('.draggable').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text', e.target.textContent);
+            });
+        });
+
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.style.background = 'rgba(255, 255, 255, 0.2)';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.background = 'rgba(255, 255, 255, 0.08)';
+        });
+
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.style.background = 'rgba(255, 255, 255, 0.08)';
+            const item = e.dataTransfer.getData('text');
+            totalUsage += waterUsage[item] || 0;
+            document.getElementById('usage-count').textContent = totalUsage;
+
+            // Particle Explosion Effect
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle-explosion';
+                particle.style.left = e.clientX + 'px';
+                particle.style.top = e.clientY + 'px';
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1200);
+            }
+        });
+
+        function resetGame() {
+            totalUsage = 0;
+            document.getElementById('usage-count').textContent = totalUsage;
+            dropZone.innerHTML = 'วางอุปกรณ์ที่นี่';
+        }
+
+        // Water Cost Calculator
+        function calculateWaterCost() {
+            const people = parseInt(document.getElementById('people').value) || 1;
+            const shower = parseInt(document.getElementById('shower').value) || 0;
+            const dishes = parseInt(document.getElementById('dishes').value) || 0;
+            if (people < 1 || shower < 0 || dishes < 0) {
+                document.getElementById('cost-result').textContent = 'กรุณากรอกข้อมูลที่ถูกต้อง';
+                return;
+            }
+            const liters = (people * shower * 15) + (dishes * 20);
+            const cost = liters * 0.005;
+            document.getElementById('cost-result').textContent = `ผลลัพธ์: คุณใช้น้ำ ${liters} ลิตร/วัน ค่าน้ำประมาณ ${cost.toFixed(2)} บาท/วัน`;
+            document.getElementById('cost-result').classList.add('animate-pulse');
+            setTimeout(() => document.getElementById('cost-result').classList.remove('animate-pulse'), 1500);
+        }
+
+        // Share Result
+        function shareResult() {
+            const result = document.getElementById('cost-result').textContent;
+            alert(`แชร์ผลลัพธ์ของคุณ: ${result}`);
+        }
+
+        // Lottie Animation
+        const fishAnimation = lottie.loadAnimation({
+            container: document.getElementById('lottie-fish'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets1.lottiefiles.com/packages/lf20_9wthnqov.json'
+        });
+        document.getElementById('lottie-fish').addEventListener('click', () => {
+            fishAnimation.setSpeed(fishAnimation.playSpeed === 1 ? 2.5 : 1);
+        });
+
+        lottie.loadAnimation({
+            container: document.getElementById('lottie-wave'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: 'https://assets3.lottiefiles.com/packages/lf20_6gmsd4nb.json'
+        });
+
+        // Button Hover Sound
+        const audio = new Audio('https://www.soundjay.com/nature/sounds/water-drip-01.mp3');
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                audio.currentTime = 0;
+                audio.play().catch(() => { });
+            });
+        });
+
+        // Scroll-Triggered Animations
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.3 });
+        document.querySelectorAll('.card, .section-title, .quote, .decor-wave, .decor-droplet, .decor-bubble').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(60px)';
+            el.style.transition = 'opacity 1s ease, transform 1s ease';
+            observer.observe(el);
+        });
+
+        // Randomize Decorative Animation Delays
+        document.querySelectorAll('.decor-wave, .decor-droplet, .decor-bubble').forEach(el => {
+            const delay = Math.random() * 2;
+            el.style.animationDelay = `${delay}s`;
+        });
+
+        // Water Text Effect on Mouse Click
+        document.addEventListener('click', (e) => {
+            const waterText = document.createElement('div');
+            waterText.className = 'water-text';
+            waterText.textContent = 'water';
+            waterText.style.left = e.clientX + 'px';
+            waterText.style.top = e.clientY + 'px';
+            document.body.appendChild(waterText);
+            setTimeout(() => waterText.remove(), 1500);
+        });
+                // Scroll Depth Indicator
+                window.addEventListener('scroll', () => {
+            // คำนวณระยะที่เลื่อน
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = (scrollTop / scrollHeight) * 100;
+
+            // อัปเดตความกว้างของแถบและข้อความ
+            document.querySelector('.scroll-depth-bar').style.width = `${scrollPercentage}%`;
+            document.querySelector('.scroll-depth-text').textContent = `${Math.round(scrollPercentage)}%`;
+        });
+    </script>
+</body>
+
+</html>
